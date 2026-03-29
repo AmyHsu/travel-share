@@ -1,0 +1,5 @@
+{
+  "name": "旅遊紀錄",
+  "description": "一個具備星等評分與照片上傳功能的響應式旅遊紀錄網頁。",
+  "requestFramePermissions": []
+}
