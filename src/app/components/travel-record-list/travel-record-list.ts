@@ -14,16 +14,16 @@ import {signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged, User} 
   imports: [RouterLink, MatIconModule, DatePipe],
   template: `
     <div class="max-w-5xl mx-auto p-6 mt-8">
-      <div class="flex items-center justify-between mb-12 border-b border-[#E8E6DF] pb-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-12 border-b border-[#E8E6DF] pb-6">
         <div>
-          <h1 class="text-4xl font-serif font-bold tracking-tight text-[#3E3E32] flex items-center gap-3">
-            <mat-icon class="text-[#7A8B76] !w-10 !h-10 !text-[40px]">auto_stories</mat-icon>
+          <h1 class="text-3xl sm:text-4xl font-serif font-bold tracking-tight text-[#3E3E32] flex items-center gap-3">
+            <mat-icon class="text-[#7A8B76] !w-8 !h-8 sm:!w-10 sm:!h-10 !text-[32px] sm:!text-[40px]">auto_stories</mat-icon>
             我的旅遊紀錄
           </h1>
           <p class="text-[#8C8C73] mt-3 font-medium">記錄您的旅程與美好回憶。</p>
         </div>
         
-        <div class="flex items-center gap-4">
+        <div class="flex flex-wrap items-center gap-4">
           @if (user()) {
             <div class="flex items-center gap-3 mr-4">
               <img [src]="user()?.photoURL || 'https://picsum.photos/seed/user/32/32'" alt="User" class="w-8 h-8 rounded-full" referrerpolicy="no-referrer">

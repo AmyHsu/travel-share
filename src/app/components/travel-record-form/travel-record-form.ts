@@ -38,10 +38,16 @@ import {onAuthStateChanged} from 'firebase/auth';
             <mat-icon class="!w-4 !h-4 !text-[16px]">title</mat-icon>標題
           </label>
           <input type="text" id="title" formControlName="title"
-                 class="w-full px-4 py-2 border border-[#E8E6DF] bg-white rounded-xl focus:ring-2 focus:ring-[#7A8B76] focus:border-[#7A8B76] outline-none transition-all"
+                 class="w-full px-4 py-2 border bg-white rounded-xl focus:ring-2 focus:ring-[#7A8B76] focus:border-[#7A8B76] outline-none transition-all"
+                 [class.border-[#E8E6DF]]="!(form.get('title')?.invalid && form.get('title')?.touched)"
+                 [class.border-[#C26D5C]]="form.get('title')?.invalid && form.get('title')?.touched"
+                 [class.bg-[#C26D5C]/5]="form.get('title')?.invalid && form.get('title')?.touched"
                  placeholder="例如：京都週末小旅行">
           @if (form.get('title')?.invalid && form.get('title')?.touched) {
-            <p class="text-[#C26D5C] text-xs mt-1">請輸入標題。</p>
+            <div class="flex items-center gap-1 mt-1.5 text-[#C26D5C] text-sm font-medium">
+              <mat-icon class="!w-4 !h-4 !text-[16px]">error</mat-icon>
+              <span>請輸入標題。</span>
+            </div>
           }
         </div>
 
@@ -51,9 +57,15 @@ import {onAuthStateChanged} from 'firebase/auth';
             <mat-icon class="!w-4 !h-4 !text-[16px]">event</mat-icon>日期
           </label>
           <input type="date" id="date" formControlName="date"
-                 class="w-full px-4 py-2 border border-[#E8E6DF] bg-white rounded-xl focus:ring-2 focus:ring-[#7A8B76] focus:border-[#7A8B76] outline-none transition-all">
+                 class="w-full px-4 py-2 border bg-white rounded-xl focus:ring-2 focus:ring-[#7A8B76] focus:border-[#7A8B76] outline-none transition-all"
+                 [class.border-[#E8E6DF]]="!(form.get('date')?.invalid && form.get('date')?.touched)"
+                 [class.border-[#C26D5C]]="form.get('date')?.invalid && form.get('date')?.touched"
+                 [class.bg-[#C26D5C]/5]="form.get('date')?.invalid && form.get('date')?.touched">
           @if (form.get('date')?.invalid && form.get('date')?.touched) {
-            <p class="text-[#C26D5C] text-xs mt-1">請選擇日期。</p>
+            <div class="flex items-center gap-1 mt-1.5 text-[#C26D5C] text-sm font-medium">
+              <mat-icon class="!w-4 !h-4 !text-[16px]">error</mat-icon>
+              <span>請選擇日期。</span>
+            </div>
           }
         </div>
 
@@ -62,7 +74,12 @@ import {onAuthStateChanged} from 'firebase/auth';
           <span class="block text-sm font-medium text-[#5A5A4A] mb-1 flex items-center gap-1">
             <mat-icon class="!w-4 !h-4 !text-[16px]">hotel_class</mat-icon>評分
           </span>
-          <div class="flex gap-1">
+          <div class="flex gap-1 transition-all"
+               [class.p-2]="form.get('rating')?.invalid && form.get('rating')?.touched"
+               [class.bg-[#C26D5C]/5]="form.get('rating')?.invalid && form.get('rating')?.touched"
+               [class.rounded-xl]="form.get('rating')?.invalid && form.get('rating')?.touched"
+               [class.border]="form.get('rating')?.invalid && form.get('rating')?.touched"
+               [class.border-[#C26D5C]]="form.get('rating')?.invalid && form.get('rating')?.touched">
             @for (star of [1, 2, 3, 4, 5]; track star) {
               <button type="button" (click)="setRating(star)"
                       class="focus:outline-none transition-transform hover:scale-110"
@@ -73,7 +90,10 @@ import {onAuthStateChanged} from 'firebase/auth';
             }
           </div>
           @if (form.get('rating')?.invalid && form.get('rating')?.touched) {
-            <p class="text-[#C26D5C] text-xs mt-1">請選擇評分。</p>
+            <div class="flex items-center gap-1 mt-1.5 text-[#C26D5C] text-sm font-medium">
+              <mat-icon class="!w-4 !h-4 !text-[16px]">error</mat-icon>
+              <span>請選擇評分。</span>
+            </div>
           }
         </div>
 
@@ -83,30 +103,46 @@ import {onAuthStateChanged} from 'firebase/auth';
             <mat-icon class="!w-4 !h-4 !text-[16px]">menu_book</mat-icon>內容
           </label>
           <textarea id="content" formControlName="content" rows="6"
-                    class="w-full px-4 py-3 border border-[#E8E6DF] bg-white rounded-xl focus:ring-2 focus:ring-[#7A8B76] focus:border-[#7A8B76] outline-none transition-all resize-none font-serif leading-loose"
+                    class="w-full px-4 py-3 border bg-white rounded-xl focus:ring-2 focus:ring-[#7A8B76] focus:border-[#7A8B76] outline-none transition-all resize-none font-serif leading-loose"
+                    [class.border-[#E8E6DF]]="!(form.get('content')?.invalid && form.get('content')?.touched)"
+                    [class.border-[#C26D5C]]="form.get('content')?.invalid && form.get('content')?.touched"
+                    [class.bg-[#C26D5C]/5]="form.get('content')?.invalid && form.get('content')?.touched"
                     placeholder="分享您的旅遊心得..."></textarea>
           @if (form.get('content')?.invalid && form.get('content')?.touched) {
-            <p class="text-[#C26D5C] text-xs mt-1">請輸入內容。</p>
+            <div class="flex items-center gap-1 mt-1.5 text-[#C26D5C] text-sm font-medium">
+              <mat-icon class="!w-4 !h-4 !text-[16px]">error</mat-icon>
+              <span>請輸入內容。</span>
+            </div>
           }
         </div>
 
         <!-- Photos -->
         <div>
-          <span class="block text-sm font-medium text-[#5A5A4A] mb-1 flex items-center gap-1">
+          <label class="flex items-center gap-1 text-sm font-medium text-[#5A5A4A] mb-1">
             <mat-icon class="!w-4 !h-4 !text-[16px]">photo_camera</mat-icon>照片 (最多 3 張)
-          </span>
+          </label>
           
           <div class="flex items-center justify-center w-full">
-            <label for="dropzone-file" class="flex flex-col items-center justify-center w-full h-32 border-2 border-[#D4C5B9] border-dashed rounded-xl cursor-pointer bg-[#F7F5F0] hover:bg-[#E8E6DF] transition-colors"
+            <label for="dropzone-file" class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-xl cursor-pointer bg-[#F7F5F0] hover:bg-[#E8E6DF] transition-colors"
+                   [class.border-[#D4C5B9]]="!photoErrorMessage()"
+                   [class.border-[#C26D5C]]="photoErrorMessage()"
+                   [class.bg-[#C26D5C]/5]="photoErrorMessage()"
                    [class.opacity-50]="photos().length >= 3" [class.cursor-not-allowed]="photos().length >= 3">
-              <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                <mat-icon class="text-[#8C8C73] mb-2">cloud_upload</mat-icon>
-                <p class="mb-2 text-sm text-[#5A5A4A]"><span class="font-semibold">點擊上傳</span> 或拖曳檔案至此</p>
-                <p class="text-xs text-[#8C8C73]">支援 PNG, JPG 或 GIF (單張最大 250KB，最多 3 張)</p>
+              <div class="flex flex-col items-center justify-center pt-5 pb-6 px-4 text-center">
+                <mat-icon class="mb-2 !w-8 !h-8 !text-[32px]" [class.text-[#8C8C73]]="!photoErrorMessage()" [class.text-[#C26D5C]]="photoErrorMessage()">cloud_upload</mat-icon>
+                <p class="mb-2 text-sm" [class.text-[#5A5A4A]]="!photoErrorMessage()" [class.text-[#C26D5C]]="photoErrorMessage()"><span class="font-semibold">點擊上傳</span> 或拖曳檔案至此</p>
+                <p class="text-xs" [class.text-[#8C8C73]]="!photoErrorMessage()" [class.text-[#C26D5C]]="photoErrorMessage()">支援 PNG, JPG 或 GIF (單張最大 250KB，最多 3 張)</p>
               </div>
               <input id="dropzone-file" type="file" class="hidden" accept="image/*" multiple (change)="onFileSelected($event)" [disabled]="photos().length >= 3" />
             </label>
           </div>
+
+          @if (photoErrorMessage()) {
+            <div class="flex items-start gap-1 mt-2 text-[#C26D5C] text-sm font-medium">
+              <mat-icon class="!w-4 !h-4 !text-[16px] shrink-0 mt-0.5">error</mat-icon>
+              <span>{{ photoErrorMessage() }}</span>
+            </div>
+          }
 
           <!-- Photo Previews -->
           @if (photos().length > 0) {
@@ -115,7 +151,7 @@ import {onAuthStateChanged} from 'firebase/auth';
                 <div class="relative group aspect-square rounded-xl overflow-hidden border border-[#E8E6DF]">
                   <img [src]="photo.data" [alt]="photo.name" class="w-full h-full object-cover">
                   <button type="button" (click)="removePhoto(i)"
-                          class="absolute top-2 right-2 bg-black/40 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/60">
+                          class="absolute top-2 right-2 bg-black/50 text-white rounded-full w-7 h-7 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/70">
                     <mat-icon class="!w-4 !h-4 !text-[16px]">close</mat-icon>
                   </button>
                 </div>
@@ -160,6 +196,7 @@ export class TravelRecordFormComponent implements OnInit {
   isEditMode = signal(false);
   recordId = signal<string | null>(null);
   errorMessage = signal<string | null>(null);
+  photoErrorMessage = signal<string | null>(null);
 
   ngOnInit() {
     if (isPlatformBrowser(this.platformId)) {
@@ -227,9 +264,9 @@ export class TravelRecordFormComponent implements OnInit {
     });
 
     if (hasOversizedFile) {
-      this.errorMessage.set('部分圖片超過 250KB 大小限制，已被忽略。請選擇較小的圖片。');
+      this.photoErrorMessage.set('部分圖片超過 250KB 大小限制，已被忽略。請選擇較小的圖片。');
     } else {
-      this.errorMessage.set(null);
+      this.photoErrorMessage.set(null);
     }
 
     validFiles.forEach(file => {
