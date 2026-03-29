@@ -102,7 +102,7 @@ import {onAuthStateChanged} from 'firebase/auth';
               <div class="flex flex-col items-center justify-center pt-5 pb-6">
                 <mat-icon class="text-[#8C8C73] mb-2">cloud_upload</mat-icon>
                 <p class="mb-2 text-sm text-[#5A5A4A]"><span class="font-semibold">點擊上傳</span> 或拖曳檔案至此</p>
-                <p class="text-xs text-[#8C8C73]">支援 PNG, JPG 或 GIF (最多 3 個檔案)</p>
+                <p class="text-xs text-[#8C8C73]">支援 PNG, JPG 或 GIF (單張最大 250KB，最多 3 張)</p>
               </div>
               <input id="dropzone-file" type="file" class="hidden" accept="image/*" multiple (change)="onFileSelected($event)" [disabled]="photos().length >= 3" />
             </label>
@@ -214,8 +214,25 @@ export class TravelRecordFormComponent implements OnInit {
     const files = Array.from(input.files);
     const remainingSlots = 3 - this.photos().length;
     const filesToProcess = files.slice(0, remainingSlots);
+    
+    const MAX_FILE_SIZE = 250 * 1024; // 250KB limit
+    let hasOversizedFile = false;
 
-    filesToProcess.forEach(file => {
+    const validFiles = filesToProcess.filter(file => {
+      if (file.size > MAX_FILE_SIZE) {
+        hasOversizedFile = true;
+        return false;
+      }
+      return true;
+    });
+
+    if (hasOversizedFile) {
+      this.errorMessage.set('部分圖片超過 250KB 大小限制，已被忽略。請選擇較小的圖片。');
+    } else {
+      this.errorMessage.set(null);
+    }
+
+    validFiles.forEach(file => {
       const reader = new FileReader();
       reader.onload = (e) => {
         const data = e.target?.result as string;

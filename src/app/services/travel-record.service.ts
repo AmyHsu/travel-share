@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {Observable, from, Subscriber} from 'rxjs';
 import {TravelRecord, PhotoUpload} from '../models/travel-record';
-import {db, auth, storage} from '../../firebase';
+import {db, auth} from '../../firebase';
 import {
   collection,
   doc,
@@ -13,7 +13,6 @@ import {
   query,
   orderBy
 } from 'firebase/firestore';
-import {ref, uploadString, getDownloadURL} from 'firebase/storage';
 
 enum OperationType {
   CREATE = 'create',
@@ -207,20 +206,6 @@ export class TravelRecordService {
   }
 
   private async uploadPhotos(photos: PhotoUpload[]): Promise<string[]> {
-    const urls: string[] = [];
-    for (const photo of photos) {
-      if (photo.data.startsWith('http')) {
-        // Already a URL
-        urls.push(photo.data);
-      } else {
-        // Base64 data, upload to Storage
-        const fileName = `${Date.now()}_${photo.name}`;
-        const storageRef = ref(storage, `photos/${fileName}`);
-        await uploadString(storageRef, photo.data, 'data_url');
-        const url = await getDownloadURL(storageRef);
-        urls.push(url);
-      }
-    }
-    return urls;
+    return photos.map(photo => photo.data);
   }
 }
