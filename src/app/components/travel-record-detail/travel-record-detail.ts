@@ -158,8 +158,6 @@ export class TravelRecordDetailComponent implements OnInit {
       } else {
         this.isLoading.set(false);
       }
-    } else {
-      this.isLoading.set(false);
     }
   }
 

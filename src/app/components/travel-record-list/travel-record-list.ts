@@ -132,8 +132,6 @@ export class TravelRecordListComponent implements OnInit {
         this.user.set(user);
       });
       this.loadRecords();
-    } else {
-      this.isLoading.set(false);
     }
   }
 
