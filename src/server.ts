@@ -6,8 +6,6 @@ import {
 } from '@angular/ssr/node';
 import express from 'express';
 import {join} from 'node:path';
-import {promises as fs} from 'node:fs';
-import {randomUUID} from 'node:crypto';
 
 const browserDistFolder = join(import.meta.dirname, '../browser');
 
@@ -15,9 +13,6 @@ const app = express();
 const angularApp = new AngularNodeAppEngine();
 
 app.use(express.json({ limit: '50mb' }));
-
-const UPLOADS_DIR = join(browserDistFolder, 'uploads');
-const DATA_FILE = join(import.meta.dirname, '../data.json');
 
 // API endpoints removed as we are now using Firebase Firestore directly from the frontend.
 

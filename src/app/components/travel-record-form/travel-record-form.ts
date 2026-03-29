@@ -1,4 +1,5 @@
-import {Component, inject, signal, OnInit} from '@angular/core';
+import {Component, inject, signal, OnInit, PLATFORM_ID} from '@angular/core';
+import {isPlatformBrowser} from '@angular/common';
 import {FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
 import {Router, ActivatedRoute} from '@angular/router';
 import {TravelRecordService} from '../../services/travel-record.service';
@@ -145,6 +146,7 @@ export class TravelRecordFormComponent implements OnInit {
   private travelService = inject(TravelRecordService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private platformId = inject(PLATFORM_ID);
 
   form = this.fb.group({
     title: ['', Validators.required],
@@ -160,42 +162,44 @@ export class TravelRecordFormComponent implements OnInit {
   errorMessage = signal<string | null>(null);
 
   ngOnInit() {
-    onAuthStateChanged(auth, (user) => {
-      if (!user) {
-        this.router.navigate(['/']);
-        return;
-      }
-      
-      const id = this.route.snapshot.paramMap.get('id');
-      if (id) {
-        this.isEditMode.set(true);
-        this.recordId.set(id);
-        this.travelService.getRecord(id).subscribe({
-          next: (record) => {
-            if (record.authorUid !== user.uid) {
-              this.router.navigate(['/']);
-              return;
+    if (isPlatformBrowser(this.platformId)) {
+      onAuthStateChanged(auth, (user) => {
+        if (!user) {
+          this.router.navigate(['/']);
+          return;
+        }
+        
+        const id = this.route.snapshot.paramMap.get('id');
+        if (id) {
+          this.isEditMode.set(true);
+          this.recordId.set(id);
+          this.travelService.getRecord(id).subscribe({
+            next: (record) => {
+              if (record.authorUid !== user.uid) {
+                this.router.navigate(['/']);
+                return;
+              }
+              this.form.patchValue({
+                title: record.title,
+                content: record.content,
+                rating: record.rating,
+                date: record.date
+              });
+              const existingPhotos = record.photos.map(url => ({
+                name: url.split('/').pop() || 'photo.jpg',
+                data: url
+              }));
+              this.photos.set(existingPhotos);
+            },
+            error: (err) => {
+              console.error('Error loading record for edit', err);
+              this.errorMessage.set('無法載入紀錄資料。');
+              setTimeout(() => this.router.navigate(['/']), 2000);
             }
-            this.form.patchValue({
-              title: record.title,
-              content: record.content,
-              rating: record.rating,
-              date: record.date
-            });
-            const existingPhotos = record.photos.map(url => ({
-              name: url.split('/').pop() || 'photo.jpg',
-              data: url
-            }));
-            this.photos.set(existingPhotos);
-          },
-          error: (err) => {
-            console.error('Error loading record for edit', err);
-            this.errorMessage.set('無法載入紀錄資料。');
-            setTimeout(() => this.router.navigate(['/']), 2000);
-          }
-        });
-      }
-    });
+          });
+        }
+      });
+    }
   }
 
   setRating(rating: number) {

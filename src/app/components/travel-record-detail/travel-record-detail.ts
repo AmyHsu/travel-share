@@ -1,4 +1,5 @@
-import {Component, inject, OnInit, signal} from '@angular/core';
+import {Component, inject, OnInit, signal, PLATFORM_ID} from '@angular/core';
+import {isPlatformBrowser} from '@angular/common';
 import {ActivatedRoute, Router, RouterLink} from '@angular/router';
 import {TravelRecordService} from '../../services/travel-record.service';
 import {TravelRecord} from '../../models/travel-record';
@@ -128,6 +129,7 @@ export class TravelRecordDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private travelService = inject(TravelRecordService);
+  private platformId = inject(PLATFORM_ID);
   
   record = signal<TravelRecord | null>(null);
   isLoading = signal(true);
@@ -137,21 +139,25 @@ export class TravelRecordDetailComponent implements OnInit {
   user = signal<User | null>(null);
 
   ngOnInit() {
-    onAuthStateChanged(auth, (user) => {
-      this.user.set(user);
-    });
-    const id = this.route.snapshot.paramMap.get('id');
-    if (id) {
-      this.travelService.getRecord(id).subscribe({
-        next: (data) => {
-          this.record.set(data);
-          this.isLoading.set(false);
-        },
-        error: (err) => {
-          console.error('Error loading record', err);
-          this.isLoading.set(false);
-        }
+    if (isPlatformBrowser(this.platformId)) {
+      onAuthStateChanged(auth, (user) => {
+        this.user.set(user);
       });
+      const id = this.route.snapshot.paramMap.get('id');
+      if (id) {
+        this.travelService.getRecord(id).subscribe({
+          next: (data) => {
+            this.record.set(data);
+            this.isLoading.set(false);
+          },
+          error: (err) => {
+            console.error('Error loading record', err);
+            this.isLoading.set(false);
+          }
+        });
+      } else {
+        this.isLoading.set(false);
+      }
     } else {
       this.isLoading.set(false);
     }

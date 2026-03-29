@@ -1,4 +1,5 @@
-import {Component, inject, OnInit, signal} from '@angular/core';
+import {Component, inject, OnInit, signal, PLATFORM_ID} from '@angular/core';
+import {isPlatformBrowser} from '@angular/common';
 import {RouterLink} from '@angular/router';
 import {TravelRecordService} from '../../services/travel-record.service';
 import {TravelRecord} from '../../models/travel-record';
@@ -119,16 +120,21 @@ import {signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged, User} 
 })
 export class TravelRecordListComponent implements OnInit {
   private travelService = inject(TravelRecordService);
+  private platformId = inject(PLATFORM_ID);
   
   records = signal<TravelRecord[]>([]);
   isLoading = signal(true);
   user = signal<User | null>(null);
 
   ngOnInit() {
-    onAuthStateChanged(auth, (user) => {
-      this.user.set(user);
-    });
-    this.loadRecords();
+    if (isPlatformBrowser(this.platformId)) {
+      onAuthStateChanged(auth, (user) => {
+        this.user.set(user);
+      });
+      this.loadRecords();
+    } else {
+      this.isLoading.set(false);
+    }
   }
 
   async login() {
