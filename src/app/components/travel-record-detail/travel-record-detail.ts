@@ -4,6 +4,8 @@ import {TravelRecordService} from '../../services/travel-record.service';
 import {TravelRecord} from '../../models/travel-record';
 import {MatIconModule} from '@angular/material/icon';
 import {DatePipe} from '@angular/common';
+import {auth} from '../../../firebase';
+import {onAuthStateChanged, User} from 'firebase/auth';
 
 @Component({
   selector: 'app-travel-record-detail',
@@ -22,14 +24,16 @@ import {DatePipe} from '@angular/common';
             返回列表
           </a>
           <div class="flex gap-2">
-            <button (click)="showDeleteModal.set(true)" class="inline-flex items-center gap-1 px-4 py-2 bg-[#F0EFE9] text-[#C26D5C] rounded-lg hover:bg-[#E8E6DF] transition-colors font-medium text-sm">
-              <mat-icon class="!w-4 !h-4 !text-[16px]">delete</mat-icon>
-              刪除
-            </button>
-            <a [routerLink]="['/edit', record()!.id]" class="inline-flex items-center gap-1 px-4 py-2 bg-[#F0EFE9] text-[#5A5A4A] rounded-lg hover:bg-[#E8E6DF] transition-colors font-medium text-sm">
-              <mat-icon class="!w-4 !h-4 !text-[16px]">edit</mat-icon>
-              編輯
-            </a>
+            @if (isOwner()) {
+              <button (click)="showDeleteModal.set(true)" class="inline-flex items-center gap-1 px-4 py-2 bg-[#F0EFE9] text-[#C26D5C] rounded-lg hover:bg-[#E8E6DF] transition-colors font-medium text-sm">
+                <mat-icon class="!w-4 !h-4 !text-[16px]">delete</mat-icon>
+                刪除
+              </button>
+              <a [routerLink]="['/edit', record()!.id]" class="inline-flex items-center gap-1 px-4 py-2 bg-[#F0EFE9] text-[#5A5A4A] rounded-lg hover:bg-[#E8E6DF] transition-colors font-medium text-sm">
+                <mat-icon class="!w-4 !h-4 !text-[16px]">edit</mat-icon>
+                編輯
+              </a>
+            }
           </div>
         </div>
 
@@ -130,8 +134,12 @@ export class TravelRecordDetailComponent implements OnInit {
   currentPhotoIndex = signal(0);
   showDeleteModal = signal(false);
   isDeleting = signal(false);
+  user = signal<User | null>(null);
 
   ngOnInit() {
+    onAuthStateChanged(auth, (user) => {
+      this.user.set(user);
+    });
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.travelService.getRecord(id).subscribe({
@@ -153,6 +161,10 @@ export class TravelRecordDetailComponent implements OnInit {
     const photos = this.record()?.photos;
     if (!photos) return;
     this.currentPhotoIndex.update(i => i === 0 ? photos.length - 1 : i - 1);
+  }
+
+  isOwner(): boolean {
+    return !!this.user() && !!this.record() && this.user()?.uid === this.record()?.authorUid;
   }
 
   nextPhoto() {

@@ -6,6 +6,7 @@ export interface TravelRecord {
   date: string;
   photos: string[];
   createdAt: string;
+  authorUid?: string;
 }
 
 export interface PhotoUpload {

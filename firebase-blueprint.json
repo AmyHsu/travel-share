@@ -1,0 +1,55 @@
+{
+  "entities": {
+    "TravelRecord": {
+      "title": "TravelRecord",
+      "description": "A record of a travel experience.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The unique identifier of the record."
+        },
+        "title": {
+          "type": "string",
+          "description": "The title of the travel record."
+        },
+        "content": {
+          "type": "string",
+          "description": "The main content/description of the travel."
+        },
+        "rating": {
+          "type": "number",
+          "description": "The rating given to the travel experience (e.g., 1-5)."
+        },
+        "date": {
+          "type": "string",
+          "description": "The date of the travel."
+        },
+        "photos": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "An array of photo URLs."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "The ISO 8601 timestamp of when the record was created."
+        },
+        "authorUid": {
+          "type": "string",
+          "description": "The Firebase Auth UID of the user who created the record."
+        }
+      },
+      "required": ["title", "content", "rating", "date", "createdAt", "authorUid"]
+    }
+  },
+  "firestore": {
+    "/travelRecords/{recordId}": {
+      "schema": {
+        "$ref": "#/entities/TravelRecord"
+      },
+      "description": "A collection of travel records."
+    }
+  }
+}

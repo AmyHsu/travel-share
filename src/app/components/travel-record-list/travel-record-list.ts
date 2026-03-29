@@ -4,6 +4,8 @@ import {TravelRecordService} from '../../services/travel-record.service';
 import {TravelRecord} from '../../models/travel-record';
 import {MatIconModule} from '@angular/material/icon';
 import {DatePipe} from '@angular/common';
+import {auth} from '../../../firebase';
+import {signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged, User} from 'firebase/auth';
 
 @Component({
   selector: 'app-travel-record-list',
@@ -19,10 +21,25 @@ import {DatePipe} from '@angular/common';
           </h1>
           <p class="text-[#8C8C73] mt-3 font-medium">記錄您的旅程與美好回憶。</p>
         </div>
-        <a routerLink="/add" class="inline-flex items-center gap-2 px-6 py-3 bg-[#7A8B76] text-white rounded-full hover:bg-[#63735F] transition-colors font-medium shadow-sm">
-          <mat-icon>edit_calendar</mat-icon>
-          新增紀錄
-        </a>
+        
+        <div class="flex items-center gap-4">
+          @if (user()) {
+            <div class="flex items-center gap-3 mr-4">
+              <img [src]="user()?.photoURL || 'https://picsum.photos/seed/user/32/32'" alt="User" class="w-8 h-8 rounded-full" referrerpolicy="no-referrer">
+              <span class="text-sm font-medium text-[#5A5A4A] hidden sm:inline">{{ user()?.displayName }}</span>
+              <button (click)="logout()" class="text-sm text-[#8C8C73] hover:text-[#C26D5C] transition-colors">登出</button>
+            </div>
+            <a routerLink="/add" class="inline-flex items-center gap-2 px-6 py-3 bg-[#7A8B76] text-white rounded-full hover:bg-[#63735F] transition-colors font-medium shadow-sm">
+              <mat-icon>edit_calendar</mat-icon>
+              新增紀錄
+            </a>
+          } @else {
+            <button (click)="login()" class="inline-flex items-center gap-2 px-6 py-3 bg-white border border-[#E8E6DF] text-[#5A5A4A] rounded-full hover:bg-[#F0EFE9] transition-colors font-medium shadow-sm">
+              <mat-icon>login</mat-icon>
+              Google 登入
+            </button>
+          }
+        </div>
       </div>
 
       @if (isLoading()) {
@@ -36,10 +53,17 @@ import {DatePipe} from '@angular/common';
           </div>
           <h3 class="text-2xl font-serif font-bold text-[#3E3E32] mb-3">尚無紀錄</h3>
           <p class="text-[#8C8C73] mb-8">新增您的第一筆紀錄，開始記錄旅程吧！</p>
-          <a routerLink="/add" class="inline-flex items-center gap-2 px-6 py-3 bg-[#7A8B76] text-white rounded-full hover:bg-[#63735F] transition-colors font-medium shadow-sm">
-            <mat-icon>add</mat-icon>
-            新增紀錄
-          </a>
+          @if (user()) {
+            <a routerLink="/add" class="inline-flex items-center gap-2 px-6 py-3 bg-[#7A8B76] text-white rounded-full hover:bg-[#63735F] transition-colors font-medium shadow-sm">
+              <mat-icon>add</mat-icon>
+              新增紀錄
+            </a>
+          } @else {
+            <button (click)="login()" class="inline-flex items-center gap-2 px-6 py-3 bg-white border border-[#E8E6DF] text-[#5A5A4A] rounded-full hover:bg-[#F0EFE9] transition-colors font-medium shadow-sm">
+              <mat-icon>login</mat-icon>
+              登入以新增紀錄
+            </button>
+          }
         </div>
       } @else {
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -98,9 +122,30 @@ export class TravelRecordListComponent implements OnInit {
   
   records = signal<TravelRecord[]>([]);
   isLoading = signal(true);
+  user = signal<User | null>(null);
 
   ngOnInit() {
+    onAuthStateChanged(auth, (user) => {
+      this.user.set(user);
+    });
     this.loadRecords();
+  }
+
+  async login() {
+    try {
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
+    } catch (error) {
+      console.error('Login failed', error);
+    }
+  }
+
+  async logout() {
+    try {
+      await signOut(auth);
+    } catch (error) {
+      console.error('Logout failed', error);
+    }
   }
 
   loadRecords() {

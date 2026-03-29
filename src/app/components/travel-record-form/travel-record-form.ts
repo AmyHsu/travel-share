@@ -4,6 +4,8 @@ import {Router, ActivatedRoute} from '@angular/router';
 import {TravelRecordService} from '../../services/travel-record.service';
 import {PhotoUpload} from '../../models/travel-record';
 import {MatIconModule} from '@angular/material/icon';
+import {auth} from '../../../firebase';
+import {onAuthStateChanged} from 'firebase/auth';
 
 @Component({
   selector: 'app-travel-record-form',
@@ -158,32 +160,42 @@ export class TravelRecordFormComponent implements OnInit {
   errorMessage = signal<string | null>(null);
 
   ngOnInit() {
-    const id = this.route.snapshot.paramMap.get('id');
-    if (id) {
-      this.isEditMode.set(true);
-      this.recordId.set(id);
-      this.travelService.getRecord(id).subscribe({
-        next: (record) => {
-          this.form.patchValue({
-            title: record.title,
-            content: record.content,
-            rating: record.rating,
-            date: record.date
-          });
-          const existingPhotos = record.photos.map(url => ({
-            name: url.split('/').pop() || 'photo.jpg',
-            data: url
-          }));
-          this.photos.set(existingPhotos);
-        },
-        error: (err) => {
-          console.error('Error loading record for edit', err);
-          this.errorMessage.set('無法載入紀錄資料。');
-          // Fallback to list after a short delay
-          setTimeout(() => this.router.navigate(['/']), 2000);
-        }
-      });
-    }
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        this.router.navigate(['/']);
+        return;
+      }
+      
+      const id = this.route.snapshot.paramMap.get('id');
+      if (id) {
+        this.isEditMode.set(true);
+        this.recordId.set(id);
+        this.travelService.getRecord(id).subscribe({
+          next: (record) => {
+            if (record.authorUid !== user.uid) {
+              this.router.navigate(['/']);
+              return;
+            }
+            this.form.patchValue({
+              title: record.title,
+              content: record.content,
+              rating: record.rating,
+              date: record.date
+            });
+            const existingPhotos = record.photos.map(url => ({
+              name: url.split('/').pop() || 'photo.jpg',
+              data: url
+            }));
+            this.photos.set(existingPhotos);
+          },
+          error: (err) => {
+            console.error('Error loading record for edit', err);
+            this.errorMessage.set('無法載入紀錄資料。');
+            setTimeout(() => this.router.navigate(['/']), 2000);
+          }
+        });
+      }
+    });
   }
 
   setRating(rating: number) {

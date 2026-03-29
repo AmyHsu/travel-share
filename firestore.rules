@@ -1,0 +1,114 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: travelRecords
+    // Document ID: auto-generated or custom string
+    // Fields:
+    //   - id: string (optional, often matches doc id)
+    //   - title: string (required, length 1-100)
+    //   - content: string (required, length 1-5000)
+    //   - rating: number (required, 1-5)
+    //   - date: string (required, ISO 8601 date string)
+    //   - photos: list of strings (optional, max 10 URLs)
+    //   - createdAt: string (required, ISO 8601 date string, immutable)
+    //   - authorUid: string (required, matches auth.uid, immutable)
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isDocOwner() {
+      return isAuthenticated() && request.auth.uid == resource.data.authorUid;
+    }
+    
+    function isRequestOwner() {
+      return isAuthenticated() && request.auth.uid == request.resource.data.authorUid;
+    }
+    
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+    
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+    
+    function validStringLength(field, minLen, maxLen) {
+      return request.resource.data[field] is string &&
+        request.resource.data[field].size() >= minLen &&
+        request.resource.data[field].size() <= maxLen;
+    }
+    
+    function isValidDateString(dateStr) {
+      return dateStr is string &&
+        dateStr.matches("^\\d{4}-\\d{2}-\\d{2}.*$");
+    }
+    
+    function isValidUrl(url) {
+      return url is string &&
+        (url.matches("^https://.*") || url.matches("^http://.*"));
+    }
+    
+    function isValidPhotosList(photos) {
+      return photos is list && photos.size() <= 10;
+    }
+    
+    function areImmutableFieldsUnchanged(fields) {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny(fields);
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+    
+    function isValidTravelRecord() {
+      let data = request.resource.data;
+      return hasRequiredFields(['title', 'content', 'rating', 'date', 'createdAt', 'authorUid']) &&
+             hasOnlyAllowedFields(['id', 'title', 'content', 'rating', 'date', 'photos', 'createdAt', 'authorUid']) &&
+             validStringLength('title', 1, 100) &&
+             validStringLength('content', 1, 5000) &&
+             data.rating is number && data.rating >= 1 && data.rating <= 5 &&
+             isValidDateString(data.date) &&
+             isValidDateString(data.createdAt) &&
+             (!('photos' in data) || isValidPhotosList(data.photos)) &&
+             (!('id' in data) || data.id is string) &&
+             data.authorUid is string && data.authorUid.size() > 0;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /travelRecords/{recordId} {
+      // Anyone can read travel records (public sharing)
+      allow read: if true;
+      
+      // Only authenticated users can create, and they must set themselves as the author
+      allow create: if isAuthenticated() && 
+                       isValidTravelRecord() && 
+                       isRequestOwner();
+                       
+      // Only the author can update their own records, and they cannot change the authorUid or createdAt
+      allow update: if isAuthenticated() && 
+                       isDocOwner() && 
+                       isValidTravelRecord() && 
+                       isRequestOwner() &&
+                       areImmutableFieldsUnchanged(['authorUid', 'createdAt']);
+                       
+      // Only the author can delete their own records
+      allow delete: if isAuthenticated() && isDocOwner();
+    }
+  }
+}
